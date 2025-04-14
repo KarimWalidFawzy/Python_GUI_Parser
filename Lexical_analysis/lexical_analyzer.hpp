@@ -33,7 +33,7 @@
         except, 
         finally, 
         For, from, global, 
-        If, import, in, is, lambda, nonlocal, Not, Or, pass, Raise, Return, Try, While, with, yield}
+        If, Import, in, is, lambda, nonlocal, Not, Or, pass, Raise, Return, Try, While, with, yield}
         reserved_keywords;
     typedef enum {
         print,len,Abs,aiter,all,anext,any,ascii,
