@@ -26,7 +26,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         WS_OVERLAPPEDWINDOW,            // Window style
 
         // Size and position
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        400, 400, 0x400, 0x400,
 
         NULL,       // Parent window    
         NULL,       // Menu
@@ -69,7 +69,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case 1:
             OPENFILENAMEA file= {sizeof(OPENFILENAME)};
-            file.lpstrFilter="txt files * .txt\0";
+            file.lpstrFilter="txt files *.txt\0";
             file.lpstrFileTitle="Search for the file you want to compile";
             char buff[MAX_PATH]={};
             file.nMaxFile=sizeof(buff);
@@ -79,6 +79,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 listoftoks=fileparser(file.lpstrFile);
                 tokenized=true;
+                InvalidateRect(hwnd, NULL, TRUE); // Invalidate the entire client area
+                UpdateWindow(hwnd);
             }            
             break;        
         }
@@ -92,12 +94,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDC hdc = BeginPaint(hwnd, &ps);
 
             // All painting occurs here, between BeginPaint and EndPaint.
-
+           
             FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
             if (tokenized)
-            {
-                DrawTokenTable(hdc,hwnd);
-            }            
+            DrawTokenTable(hdc,hwnd);
             EndPaint(hwnd, &ps);
         }
         return 0;
@@ -111,19 +111,20 @@ void AddMenus(HWND hWnd){
     SetMenu(hWnd,hMenu);
 }
 void DrawTokenTable(HDC hdc, HWND hwnd) {
+    //child window
+    /**/
+    //CreateWindowA("static","TestChild",WS_CHILDWINDOW |WS_CHILD|WS_VISIBLE,200,100,0x500,0x500,hwnd,NULL,NULL,NULL);
     RECT rect;
     GetClientRect(hwnd, &rect);
     int cellWidth = 200; // Adjust as needed
     int cellHeight = 50; // Adjust as needed
     int rows = (listoftoks.size() + (rect.right / cellWidth) - 1) / (rect.right / cellWidth);
     int cols = rect.right / cellWidth;
-
     for (int i = 0; i < listoftoks.size(); ++i) {
         int row = i / cols;
         int col = i % cols;
         int x = col * cellWidth;
         int y = row * cellHeight;
-
         // Draw cell boundaries
         Rectangle(hdc, x, y, x + cellWidth, y + cellHeight);
 

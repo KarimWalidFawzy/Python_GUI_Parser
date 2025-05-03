@@ -237,6 +237,7 @@ std::vector <token> fileparser(const char* filePath){
     {
         system("echo Quotation marks balanced");
     }    
+    fin.close();
     return listoftokens;
 }
 token::token(std::string id){
@@ -497,6 +498,9 @@ std::string token::getID(){
 }
 tokentype token::getType(){
     return this->Type;
+}
+std::string getName(){
+    
 }
 /**
  * ID : [(a-z)|(A-Z)|_](alnum | _) 
