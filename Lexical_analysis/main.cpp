@@ -52,7 +52,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return 0;
 }
-
+void DrawTokenTable(HDC hdc, HWND hwnd);
+std::vector <token> listoftoks;
+bool tokenized=false;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -60,6 +62,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     //All Window GUI elements are here
         AddMenus(hwnd);
+                
         break;
     case WM_COMMAND:
         switch (wParam)
@@ -74,7 +77,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             bool rez=GetOpenFileNameA(&file);
             if (rez)
             {
-                std::vector <token> listoftoks=fileparser(file.lpstrFile);
+                listoftoks=fileparser(file.lpstrFile);
+                tokenized=true;
             }            
             break;        
         }
@@ -90,7 +94,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             // All painting occurs here, between BeginPaint and EndPaint.
 
             FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
-
+            if (tokenized)
+            {
+                DrawTokenTable(hdc,hwnd);
+            }            
             EndPaint(hwnd, &ps);
         }
         return 0;
@@ -102,4 +109,25 @@ void AddMenus(HWND hWnd){
     hMenu = CreateMenu();
     AppendMenu(hMenu,MF_STRING,0x1,L"Open to Compile");
     SetMenu(hWnd,hMenu);
+}
+void DrawTokenTable(HDC hdc, HWND hwnd) {
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int cellWidth = 200; // Adjust as needed
+    int cellHeight = 50; // Adjust as needed
+    int rows = (listoftoks.size() + (rect.right / cellWidth) - 1) / (rect.right / cellWidth);
+    int cols = rect.right / cellWidth;
+
+    for (int i = 0; i < listoftoks.size(); ++i) {
+        int row = i / cols;
+        int col = i % cols;
+        int x = col * cellWidth;
+        int y = row * cellHeight;
+
+        // Draw cell boundaries
+        Rectangle(hdc, x, y, x + cellWidth, y + cellHeight);
+
+        // Draw the token text
+        TextOutA(hdc, x + 5, y + 5, listoftoks[i].getID().c_str(), listoftoks[i].getID().length()+1);
+    }
 }

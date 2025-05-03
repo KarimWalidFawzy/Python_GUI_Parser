@@ -85,7 +85,9 @@
         open_curly,
         close_curly,
         equality,
-        assignment 
+        assignment,
+        string_tkn,
+        error 
     }tokentype;
     class token{
         private:
@@ -99,6 +101,7 @@
         token(float num);
         token(tokentype);
         token(reserved_functions);
+        void setstring(std::string);
         std::string getID(void);
         tokentype getType(void);
     };    

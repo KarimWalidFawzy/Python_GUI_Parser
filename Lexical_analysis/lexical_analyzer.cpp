@@ -16,9 +16,12 @@ std::string idgetter(std::string & strtobeparsed, int index){
     return strtobeparsed.substr(index,L);        
 }
 std::vector <token> fileparser(const char* filePath){
-    using namespace std;
+    using std::vector;
+    using std::string;
     vector <token> listoftokens;
-    ifstream fin(filePath);
+    using std::stack;
+    using std::getline;
+    std::ifstream fin(filePath);
     string fileContents="";
     string FF;
     stack <char> nbb,sbb,cbb,dqb,sqb;
@@ -44,7 +47,7 @@ std::vector <token> fileparser(const char* filePath){
             listoftokens.push_back(token(Minus));
         break;
         case '*':
-            if(fileContents[i+1]=='*'){listoftokens.push_back(token(power));i++;}
+            if(fileContents[i+1]=='*'){listoftokens.push_back(token(power));i+=2;}
             else listoftokens.push_back(token(multiply));
         break;
         case '/':
@@ -62,15 +65,15 @@ std::vector <token> fileparser(const char* filePath){
             listoftokens.push_back(token(not_operator_symbol));
         break;
         case '\"':
-            listoftokens.push_back(token(double_quotation));
-            if(dqb.empty())dqb.push('\"');else dqb.pop();
+            listoftokens.push_back(token(string_tkn));
+            if(dqb.empty()){dqb.push('\"');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\"' && fileContents.substr(i+1+lenofstr,2)!="\\\""){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i+1,lenofstr));i+=lenofstr;} else dqb.pop();
         break;
         case '%':
             listoftokens.push_back(token(mod_operator));
         break;
         case '\'':
-            listoftokens.push_back(token(single_quotation));
-            if(sqb.empty())dqb.push('\"');else sqb.pop();
+            listoftokens.push_back(token(string_tkn));
+            if(sqb.empty()){sqb.push('\'');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\''&& fileContents.substr(i+1+lenofstr,2)!="\\\'"){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i+1,lenofstr));i+=lenofstr;} else sqb.pop();
             break;
         case '&':
             listoftokens.push_back(token(and_operator_symbol));
@@ -221,10 +224,19 @@ std::vector <token> fileparser(const char* filePath){
             break;
         }
     }
-    if(!sqb.empty() && !cbb.empty() && !nbb.empty()){
-                //MessageBox()
-            }
-    system(fileContents.c_str());
+    if(!sbb.empty() || !cbb.empty() || !nbb.empty()){
+        system("echo Error, brackets not balanced");
+    } else {
+        system("echo Success, brackets are balanced");
+    }
+    if (!sqb.empty() || !dqb.empty())
+    {
+        system("echo Error, quotation marks missing");
+    }
+    else 
+    {
+        system("echo Quotation marks balanced");
+    }    
     return listoftokens;
 }
 token::token(std::string id){
@@ -322,7 +334,9 @@ std::string reservedFunctionToString(reserved_functions func) {
         default: return "invalid_reserved_function";
     }
 }
-
+void token::setstring(std::string str){
+    this->id=str;
+}
 token::token(reserved_keywords res){
     this->res_key=res;
     this->Type=reserved_keyword;
