@@ -2,7 +2,7 @@
 /**
  * This Function will parse the file contents into tokens
  */
-#include <map>
+
 std::string idgetter(std::string & strtobeparsed, int index){
     //This function takes the string and 
     int L=1;
@@ -225,13 +225,13 @@ std::vector <token> fileparser(const char* filePath){
         }
     }
     if(!sbb.empty() || !cbb.empty() || !nbb.empty()){
-        system("echo Error, brackets not balanced");
+        MessageBoxA(0,"Error, brackets not balanced", "Error", MB_OK);
     } else {
         system("echo Success, brackets are balanced");
     }
     if (!sqb.empty() || !dqb.empty())
     {
-        system("echo Error, quotation marks missing");
+        MessageBoxA(0,"Error, brackets not balanced", "Error", MB_OK);
     }
     else 
     {
@@ -240,8 +240,20 @@ std::vector <token> fileparser(const char* filePath){
     fin.close();
     return listoftokens;
 }
+std::string reservedFunctionToString(reserved_functions);
 token::token(std::string id){
     this->id=id;
+    this->Type=identifier;
+    reserved_functions RF;
+    for (RF =(reserved_functions)0; RF <__import__ ; RF=(reserved_functions)(1+RF))
+    {
+        if (id==reservedFunctionToString(RF))
+        {
+            this->Type=reserve_function;
+            this->function=RF;
+            break;
+        }        
+    }    
 }
 std::string reservedFunctionToString(reserved_functions);
 reserved_functions stringtoreserved(std::string id){
@@ -313,12 +325,12 @@ std::string reservedFunctionToString(reserved_functions func) {
         case oct: return "oct";
         case open: return "open";
         case ord: return "ord";
-        case pow: return "pow";
+        case Pow: return "pow";
         case property: return "property";
         case range: return "range";
         case repr: return "repr";
         case reversed: return "reversed";
-        case round: return "round";
+        case Round: return "round";
         case set: return "set";
         case setattr: return "setattr";
         case slice: return "slice";
@@ -333,6 +345,88 @@ std::string reservedFunctionToString(reserved_functions func) {
         case zip: return "zip";
         case __import__: return "__import__";
         default: return "invalid_reserved_function";
+    }
+}
+std::string get_token_name(tokentype type) {
+    switch (type) {
+        case reserved_keyword:
+            return "reserved_keyword";
+        case identifier:
+            return "identifier";
+        case number:
+            return "number";
+        case identation:
+            return "identation";
+        case EOL:
+            return "EOL";
+        case reserve_function:
+            return "reserve_function";
+        case Plus:
+            return "Plus";
+        case Minus:
+            return "Minus";
+        case multiply:
+            return "multiply";
+        case open_bracket:
+            return "open_bracket";
+        case closed_bracket:
+            return "closed_bracket";
+        case power:
+            return "power";
+        case divide:
+            return "divide";
+        case single_quotation:
+            return "single_quotation";
+        case double_quotation:
+            return "double_quotation";
+        case not_operator_symbol:
+            return "not_operator_symbol";
+        case mod_operator:
+            return "mod_operator";
+        case and_operator_symbol:
+            return "and_operator_symbol";
+        case comma:
+            return "comma";
+        case dot:
+            return "dot";
+        case colon:
+            return "colon";
+        case bitwise_shift_left:
+            return "bitwise_shift_left";
+        case bitwise_shift_right:
+            return "bitwise_shift_right";
+        case lessthan:
+            return "lessthan";
+        case greaterthan:
+            return "greaterthan";
+        case lessthanorequalto:
+            return "lessthanorequalto";
+        case greaterthanorequalto:
+            return "greaterthanorequalto";
+        case bitwise_not:
+            return "bitwise_not";
+        case bitwise_or:
+            return "bitwise_or";
+        case bitwise_xor:
+            return "bitwise_xor";
+        case open_square:
+            return "open_square";
+        case close_square:
+            return "close_square";
+        case open_curly:
+            return "open_curly";
+        case close_curly:
+            return "close_curly";
+        case equality:
+            return "equality";
+        case assignment:
+            return "assignment";
+        case string_tkn:
+            return "string_tkn";
+        case error:
+            return "error";
+        default:
+            return "UNKNOWN_TOKEN_TYPE";
     }
 }
 void token::setstring(std::string str){

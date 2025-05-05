@@ -44,8 +44,8 @@
         getattr,globals,hasattr,hash,help,hex,
         id,input,Int,isinstance,issubclass,iter,list,locals,
         Map,max,memoryview,min,next,
-        object,oct,open,ord,pow,property,        
-        range,repr,reversed,round,
+        object,oct,open,ord,Pow,property,        
+        range,repr,reversed,Round,
         set,setattr,slice,sorted,staticmethod,str,sum,super,tuple,type,
         vars,zip,__import__
         } reserved_functions;
@@ -106,6 +106,7 @@
         tokentype getType(void);
     };    
     std::vector <token> fileparser(const char*);
+    std::string get_token_name(tokentype);
 #endif
 /*
     2.	Basic Constructs of Python: 
