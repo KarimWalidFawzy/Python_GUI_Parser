@@ -12,6 +12,7 @@
     #endif 
     #include <windows.h>
     #include <commdlg.h>
+    #include <gdiplus.h>
     #include <GL/gl.h>
     #include <d2d1.h>
     typedef enum {
@@ -87,6 +88,25 @@
         equality,
         assignment,
         string_tkn,
+        notequalto,
+        plusequal,
+        minusequal,
+        mulequal,
+        divequal,
+        andequal,
+        xorequal,
+        orequal,
+        colequal,
+        modequal,
+        atequal,
+        at_operator,
+        pow_equal,
+        double_divide,
+        doubledivideequal,
+        rarrow,
+        ellipsis,
+        shifteql,
+        shifteqr,
         error 
     }tokentype;
     class token{

@@ -41,17 +41,26 @@ std::vector <token> fileparser(const char* filePath){
             listoftokens.push_back(token(identation));
         break;
         case '+':
+            if (fileContents[i+1]=='=') {listoftokens.push_back(token(plusequal));i++;}
+            else
             listoftokens.push_back(token(Plus));
         break;
         case '-':
-            listoftokens.push_back(token(Minus));
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(minusequal));i++;}
+        else if (fileContents[i+1]=='>') {listoftokens.push_back(token(rarrow));i++;}
+        else    listoftokens.push_back(token(Minus));
         break;
         case '*':
-            if(fileContents[i+1]=='*'){listoftokens.push_back(token(power));i+=2;}
+            if(fileContents[i+1]=='*'){listoftokens.push_back(token(power));i++;}
+            else if (fileContents[i+1]=='=') {listoftokens.push_back(token(mulequal));i++;}
+            else if (fileContents[i+1]=='*'&&fileContents[i+2]=='=') {listoftokens.push_back(token(pow_equal));i+=2;}
             else listoftokens.push_back(token(multiply));
         break;
         case '/':
-          listoftokens.push_back(token(divide));
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(divequal));i++;}
+        else if (fileContents[i+1]=='/') {listoftokens.push_back(token(double_divide));i++;}
+        else if (fileContents[i+1]=='/'&&fileContents[i+2]=='=') {listoftokens.push_back(token(doubledivideequal));i++;}
+        else   listoftokens.push_back(token(divide));
         break;
         case '(':
             listoftokens.push_back(token(open_bracket));
@@ -62,13 +71,20 @@ std::vector <token> fileparser(const char* filePath){
             nbb.pop();
         break;
         case '!':
+            if (fileContents[i+1]=='=') {i++; listoftokens.push_back(token(notequalto));}
+            else
             listoftokens.push_back(token(not_operator_symbol));
+        break;
+        case '@':
+            if(fileContents[i+1]=='='){listoftokens.push_back(token(atequal));i++;}
+            else listoftokens.push_back(token(at_operator));
         break;
         case '\"':
             listoftokens.push_back(token(string_tkn));
             if(dqb.empty()){dqb.push('\"');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\"' && fileContents.substr(i+1+lenofstr,2)!="\\\""){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i+1,lenofstr));i+=lenofstr;} else dqb.pop();
         break;
         case '%':
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(modequal));i+=2;}
             listoftokens.push_back(token(mod_operator));
         break;
         case '\'':
@@ -76,25 +92,31 @@ std::vector <token> fileparser(const char* filePath){
             if(sqb.empty()){sqb.push('\'');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\''&& fileContents.substr(i+1+lenofstr,2)!="\\\'"){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i+1,lenofstr));i+=lenofstr;} else sqb.pop();
             break;
         case '&':
-            listoftokens.push_back(token(and_operator_symbol));
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(andequal));i+=2;}
+        else listoftokens.push_back(token(and_operator_symbol));
         break;
         case ',':
             listoftokens.push_back(token(comma));
         break;
         case '.':
+            if(fileContents.substr(i,3)=="..."){listoftokens.push_back(token(ellipsis));i+=2;}
+            else
             listoftokens.push_back(token(dot));
         break;
         case ':':
-            listoftokens.push_back(token(colon));
+            if(fileContents[i+1]=='=') {listoftokens.push_back(token(colequal));i++;}
+            else listoftokens.push_back(token(colon));
         break;
         case '~':
             listoftokens.push_back(token(bitwise_not));
         break;
         case '|':
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(orequal));i++;}
             listoftokens.push_back(token(bitwise_or));
         break;
         case '^':
-            listoftokens.push_back(token(bitwise_xor));
+        if (fileContents[i+1]=='=') {listoftokens.push_back(token(xorequal));i++;}
+        else  listoftokens.push_back(token(bitwise_xor));
         break;
         case '[':
             listoftokens.push_back(token(open_square));
@@ -115,11 +137,13 @@ std::vector <token> fileparser(const char* filePath){
         case '<':
             if(fileContents[i+1]=='<'){listoftokens.push_back(token(bitwise_shift_left));i++;}
             else if(fileContents[i+1]=='='){listoftokens.push_back(token(lessthanorequalto));i++;}
+            else if(fileContents[i+1]=='<'&&fileContents[i+2]=='='){listoftokens.push_back(token(shifteql));i+=2;}
             else listoftokens.push_back(token(lessthan));
         break;
         case '>':
             if(fileContents[i+1]=='>'){listoftokens.push_back(token(bitwise_shift_right));i++;}
             else if(fileContents[i+1]=='='){listoftokens.push_back(token(greaterthanorequalto));i++;}
+            else if(fileContents.substr(i,3)==">>="){listoftokens.push_back(token(shifteqr));i+=2;}
             else listoftokens.push_back(token(greaterthan));
         break;
         case '=':
@@ -425,6 +449,44 @@ std::string get_token_name(tokentype type) {
             return "string_tkn";
         case error:
             return "error";
+        case notequalto:
+            return "notequalto";
+        case plusequal:
+            return "plusequal";
+        case minusequal:
+            return "minusequal";
+        case mulequal:
+            return "mulequal";
+        case divequal:
+            return "divequal";
+        case andequal:
+            return "andequal";
+        case xorequal:
+            return "xorequal";
+        case orequal:
+            return "orequal";
+        case colequal:
+            return "colequal";
+        case modequal:
+            return "modequal";
+        case atequal:
+            return "atequal";
+        case at_operator:
+            return "at_operator";
+        case pow_equal:
+            return "pow_equal";
+        case double_divide:
+            return "double_divide";
+        case doubledivideequal:
+            return "doubledivideequal";
+        case rarrow:
+            return "rarrow";
+        case ellipsis:
+            return "ellipsis";
+        case shifteql:
+            return "shifteql";
+        case shifteqr:
+            return "shifteqr";
         default:
             return "UNKNOWN_TOKEN_TYPE";
     }
@@ -578,6 +640,25 @@ std::string tokenToSymbol(tokentype tok) {
         case greaterthan: return ">";
         case equality: return "==";
         case assignment: return "=";
+        case notequalto: return "!=";
+        case plusequal: return "+=";
+        case minusequal: return "-=";
+        case mulequal: return "*=";
+        case divequal: return "/=";
+        case andequal: return "&=";
+        case xorequal: return "^=";
+        case orequal: return "|=";
+        case colequal: return ":=";
+        case modequal: return "%=";
+        case atequal: return "@=";
+        case at_operator: return "@";
+        case pow_equal: return "**=";
+        case double_divide: return "//";
+        case doubledivideequal: return "//=";
+        case rarrow: return "->";
+        case ellipsis: return "...";
+        case shifteql: return "<<=";
+        case shifteqr: return ">>=";
         default: return "<unknown>";
     }
 }
