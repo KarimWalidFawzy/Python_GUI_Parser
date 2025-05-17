@@ -2,9 +2,12 @@
 #define LEXICAL_ANALYZER_HPP
     #include <regex>
     #include <cstdlib>
+    #include <deque>
+    #include <stack>
     #include <string>
     #include <fstream>
     #include <vector>
+    #include <memory>
     #define NOMINMAX 0
     #define WIN32_LEAN_AND_MEAN
     #ifndef UNICODE
@@ -12,7 +15,7 @@
     #endif 
     #include <windows.h>
     #include <commdlg.h>
-    #include <gdiplus.h>
+   // #include <gdiplus.h>
     #include <GL/gl.h>
     #include <d2d1.h>
     typedef enum {

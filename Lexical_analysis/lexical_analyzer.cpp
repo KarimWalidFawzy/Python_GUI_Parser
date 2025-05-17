@@ -51,7 +51,7 @@ std::vector <token> fileparser(const char* filePath){
         else    listoftokens.push_back(token(Minus));
         break;
         case '*':
-            if(fileContents[i+1]=='*'){listoftokens.push_back(token(power));i++;}
+            if(fileContents[i+1]=='*'&&fileContents[i+2]!='='){listoftokens.push_back(token(power));i++;}
             else if (fileContents[i+1]=='=') {listoftokens.push_back(token(mulequal));i++;}
             else if (fileContents[i+1]=='*'&&fileContents[i+2]=='=') {listoftokens.push_back(token(pow_equal));i+=2;}
             else listoftokens.push_back(token(multiply));
@@ -81,7 +81,7 @@ std::vector <token> fileparser(const char* filePath){
         break;
         case '\"':
             listoftokens.push_back(token(string_tkn));
-            if(dqb.empty()){dqb.push('\"');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\"' && fileContents.substr(i+1+lenofstr,2)!="\\\""){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i+1,lenofstr));i+=lenofstr;} else dqb.pop();
+            if(dqb.empty()){dqb.push('\"');int lenofstr=0; while (fileContents[i+1+lenofstr]!='\"' && fileContents.substr(i+1+lenofstr,2)!="\\\""){lenofstr++;}listoftokens.back().setstring(fileContents.substr(i,lenofstr));i+=lenofstr;} else dqb.pop();
         break;
         case '%':
         if (fileContents[i+1]=='=') {listoftokens.push_back(token(modequal));i+=2;}

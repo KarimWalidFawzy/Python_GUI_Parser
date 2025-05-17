@@ -1,55 +1,6 @@
 #include "parsing.hpp"
-/** 
- * python expression 
- * expression -> term (('+' | '-') term)*
- * term -> factor (('*' | '/') factor)*
- * factor -> number | identifier | '(' expression ')'
- * expression -> reserved_function '(' expression ')'
- * reserved_function -> 'print' | 'input' | 'len' | 'str' | 'int' | 'float'
- * expression -> 'if' expression ':' statement
- * statement -> 'for' identifier 'in' expression ':' statement
- * statement -> 'while' expression ':' statement
- * statement -> 'def' identifier '(' (identifier (',' identifier)*)? ')' ':' statement
- * * statement -> 'return' expression
- * * statement -> 'break'
- * * statement -> 'continue'
- * * statement -> 'pass'
- * * statement -> 'class' identifier '(' (identifier (',' identifier)*)? ')' ':' statement
- * * statement -> 'try' statement 'except' statement
- * * statement -> 'finally' statement
- * * statement -> 'with' expression ':' statement
- * * statement -> 'assert' expression
- * * statement -> 'raise' expression
- * * statement -> 'global' identifier
- * * * statement -> 'nonlocal' identifier
- * * * statement -> 'async' statement
- * * * statement -> 'await' expression
- * * * statement -> 'yield' expression
- * * * statement -> 'import' identifier
- * * * statement -> 'from' identifier 'import' identifier
- * * * statement -> 'as' identifier
- * * * statement -> 'elif' expression ':' statement
- * * * statement -> 'else' ':' statement
- * * * statement -> 'break' | 'continue' | 'pass'
- * * * statement -> 'elif' expression ':' statement
- * * * statement -> 'else' ':' statement
- * * * statement -> 'try' statement 'except' statement
- * * * * statement -> 'finally' statement
- * * * * * statement -> 'with' expression ':' statement
- * * * * * * statement -> 'assert' expression
- * * * * * * * statement -> 'raise' expression
- * * * * * * * * statement -> 'global' identifier
- * * * * * * * * * statement -> 'nonlocal' identifier
- * * * * * * * * * * statement -> 'async' statement
- * * * * * * * * * * statement -> 'await' expression
- * 
- * */
 /* # PEG grammar for Python
-
-
-
 # ========================= START OF THE GRAMMAR =========================
-
 # General grammatical elements and rules:
 #
 # * Strings with double quotes (") denote SOFT KEYWORDS
@@ -945,11 +896,462 @@ func_type_comment:
 | TYPE_COMMENT
 
 # ========================= END OF THE GRAMMAR ===========================
- *  */  
-ParseTreeNode* parse(std::vector <token> listtoks){
-    ParseTreeNode* root = new ParseTreeNode("root");
-    
-}
-void drawParseTree(HDC hdc, ParseTreeNode* node, int x, int y, int xOffset, int yOffset){
+ *  */
+/*
 
+*/  
+typedef std::stack<token> Stack;
+Stack expr1;
+
+ParseTreeNode* parse(std::vector <token> listtoks){
+    ParseTreeNode* root = new ParseTreeNode("expression-seq");
+    root->setValue("expression");
+    Stack parsingstack;
+    ParseTreeNode* current=root;
+    for (int i = 0; i < listtoks.size(); i++)
+    {
+        //parsingstack.push(listtoks[i]);
+        tokentype first= listtoks[i].getType();
+        tokentype follow= listtoks[i+1].getType();
+        if (first == identifier && follow == assignment)
+        {
+            root->addChild(new ParseTreeNode("identifier"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+            i++;
+            root->addChild(new ParseTreeNode("assignment"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+            i++;
+            if (listtoks[i-1].getType() == assignment)
+            {
+                current->addChild(new ParseTreeNode("="));
+                i++;
+                while (listtoks[i].getType()!=EOL)
+            {
+            
+                if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            if (listtoks[i].getType() ==Plus 
+                || listtoks[i].getType()==Minus
+                || listtoks[i].getType()==multiply
+                || listtoks[i].getType()==divide
+                || listtoks[i].getType()==mod_operator
+                || listtoks[i].getType()==power
+                || listtoks[i].getType()==bitwise_or
+                || listtoks[i].getType()==and_operator_symbol
+                || listtoks[i].getType()==bitwise_xor
+                || listtoks[i].getType()==lessthan
+                || listtoks[i].getType()==greaterthan
+                || listtoks[i].getType()==lessthanorequalto
+                || listtoks[i].getType()==greaterthanorequalto
+                || listtoks[i].getType()==equality
+                || listtoks[i].getType()==notequalto
+                || listtoks[i].getType()==not_operator_symbol
+                || listtoks[i].getType()==bitwise_shift_left
+                || listtoks[i].getType()==bitwise_shift_right
+                || listtoks[i].getType()==bitwise_not
+                || listtoks[i].getType()==open_bracket
+                || listtoks[i].getType()==closed_bracket
+                || listtoks[i].getType()==open_square
+                || listtoks[i].getType()==close_square
+                || listtoks[i].getType()==open_curly
+                || listtoks[i].getType()==close_curly
+                || listtoks[i].getType()==comma
+                || listtoks[i].getType()==dot
+            )
+            {
+                current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                i++;
+                if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            }
+            }
+            root->addChild(new ParseTreeNode("EOL"));
+            root->addChild(new ParseTreeNode("expression"));
+            current=root->children.back();
+        }
+        else if (first == reserved_keyword && follow == EOL)
+        {
+            root->addChild(new ParseTreeNode("res-expression"));
+            root->addChild(new ParseTreeNode("reserved_keyword"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+            if (current->children[0]->getValue()=="if")
+            {
+                current->addChild(new ParseTreeNode("if"));
+                current->addChild(new ParseTreeNode("if-condition"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="while")
+            {
+                current->addChild(new ParseTreeNode("while"));
+                current->addChild(new ParseTreeNode("while-condition"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="for")
+            {
+                current->addChild(new ParseTreeNode("for"));
+                current->addChild(new ParseTreeNode("for-loop"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="def")
+            {
+                current->addChild(new ParseTreeNode("function"));
+                current=current->children[0];
+                current->addChild(new ParseTreeNode("def"));
+                current->addChild(new ParseTreeNode("function-name"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="class")
+            {
+                current->addChild(new ParseTreeNode("class"));
+                current->children[0]->addChild(new ParseTreeNode("class-name"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="import")
+            {
+                current->addChild(new ParseTreeNode("import"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="return")
+            {
+                current->addChild(new ParseTreeNode("return"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="print")
+            {
+                current->addChild(new ParseTreeNode("print"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="break")
+            {
+                current->addChild(new ParseTreeNode("break"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="continue")
+            {
+                current->addChild(new ParseTreeNode("continue"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="pass")
+            {
+                current->addChild(new ParseTreeNode("pass"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="del")
+            {
+                current->addChild(new ParseTreeNode("del"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="assert")
+            {
+                current->addChild(new ParseTreeNode("assert"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="try")
+            {
+                current->addChild(new ParseTreeNode("try"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="except")
+            {
+                current->addChild(new ParseTreeNode("except"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="finally")
+            {
+                current->addChild(new ParseTreeNode("finally"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="with")
+            {
+                current->addChild(new ParseTreeNode("with"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="as")
+            {
+                current->addChild(new ParseTreeNode("as"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="elif")
+            {
+                current->addChild(new ParseTreeNode("elif"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="else")
+            {
+                current->addChild(new ParseTreeNode("else"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="elif")
+            {
+                current->addChild(new ParseTreeNode("elif"));
+                i++;
+                if (listtoks[i].getType() == identifier)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+                else if (listtoks[i].getType() == number)
+                {
+                    current->addChild(new ParseTreeNode(listtoks[i].getID()));
+                }
+            }
+            else if (current->children[0]->getValue()=="async")
+            {
+                current->addChild(new ParseTreeNode("async"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="await")
+            {
+                current->addChild(new ParseTreeNode("await"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="yield")
+            {
+                current->addChild(new ParseTreeNode("yield"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="lambda")
+            {
+                current->addChild(new ParseTreeNode("lambda"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="async")
+            {
+                current->addChild(new ParseTreeNode("async"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="match")
+            {
+                current->addChild(new ParseTreeNode("match"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="case")
+            {
+                current->addChild(new ParseTreeNode("case"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="in")
+            {
+                current->addChild(new ParseTreeNode("in"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="is")
+            {
+                current->addChild(new ParseTreeNode("is"));
+                i++;
+            }
+            else if (current->children[0]->getValue()=="not")
+            {
+                current->addChild(new ParseTreeNode("not"));
+                i++;
+            }                        
+        }
+        else if (first == EOL)
+        {
+            root->addChild(new ParseTreeNode("EOL"));
+            current=root->children[0];
+        }
+        else if (first == number)
+        {
+            root->addChild(new ParseTreeNode("number"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == string_tkn)
+        {
+            root->addChild(new ParseTreeNode("string_tkn"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == reserve_function)
+        {
+            root->addChild(new ParseTreeNode("reserved_function"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == open_bracket)
+        {
+            root->addChild(new ParseTreeNode("open_bracket"));
+            root->addChild(new ParseTreeNode("factor"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == closed_bracket)
+        {
+            root->addChild(new ParseTreeNode("closed_bracket"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == open_square)
+        {
+            root->addChild(new ParseTreeNode("open_square"));
+            root->addChild(new ParseTreeNode("list"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == close_square)
+        {
+            root->addChild(new ParseTreeNode("close_square"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == open_curly)
+        {
+            root->addChild(new ParseTreeNode("open_curly"));
+            root->addChild(new ParseTreeNode("dictionary"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (
+            first == close_curly
+        )
+        {
+            root->addChild(new ParseTreeNode("close_curly"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == comma)
+        {
+            root->addChild(new ParseTreeNode("comma"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == dot)
+        {
+            root->addChild(new ParseTreeNode("dot"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == colon)
+        {
+            root->addChild(new ParseTreeNode("colon"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == assignment)
+        {
+            root->addChild(new ParseTreeNode("assignment"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == Plus
+                || first == Minus
+                || first == multiply
+                || first == divide
+                || first == mod_operator
+                || first == power
+                || first == bitwise_or
+                || first == and_operator_symbol
+                || first == bitwise_xor
+                || first == lessthan
+                || first == greaterthan
+                || first == lessthanorequalto
+                || first == greaterthanorequalto
+                || first == equality
+                || first == notequalto
+                || first == not_operator_symbol
+                || first == bitwise_shift_left
+                || first == bitwise_shift_right
+                || first == bitwise_not)
+        {
+            root->addChild(new ParseTreeNode("operator"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+        else if (first == reserved_keyword)
+        {
+            root->addChild(new ParseTreeNode("reserved_keyword"));
+            current=root->children[0];
+            current->addChild(new ParseTreeNode(listtoks[i].getID()));
+        }
+                
+    }
+    return root;
+}
+void insertinaTree(ParseTreeNode* root, ParseTreeNode* child,int level,int childindex){
+    if (level == 0){
+        root->addChild(child);
+    }
+    else{
+        insertinaTree(root->children[childindex], child, level-1,childindex);
+    }
 }

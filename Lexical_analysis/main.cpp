@@ -57,6 +57,8 @@ void DrawTokenTable(HDC hdc, HWND hwnd);
 std::vector <token> listoftoks;
 bool tokenized=false;
 bool parsing=false;
+void displayErrorMessage(const std::string& message);
+void drawNode(HDC hdc, int x, int y, const std::string& text);
 void DrawParsingTree(HDC,HWND);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -151,49 +153,57 @@ void DrawTokenTable(HDC hdc, HWND hwnd) {
         // Draw cell boundaries
         Rectangle(hdc, x, y, x + cellWidth, y + cellHeight);
         // Draw the token text
-        TextOutA(hdc, x + 5, y + 5, get_token_name(listoftoks[i].getType()).c_str(), get_token_name(listoftoks[i].getType()).length()+1); 
+        std::string tokenText = get_token_name(listoftoks[i].getType())+ ":" + listoftoks[i].getID();
+        TextOutA(hdc, x + 5, y + 5, tokenText.c_str(), tokenText.length()+1); 
    }
 }
 void DrawParsingTree(HDC hdc, HWND hwnd) {
-    // Parsing Tree code
-    // You can use the same logic as in the previous example to draw the parsing tree
-    // For simplicity, let's just draw a placeholder for the parsing tree
     RECT rect;
     GetClientRect(hwnd, &rect);
-    int x = rect.right / 2;
-    int y = rect.bottom / 2;
-    int xOffset = 50;
+    int centerX = rect.right / 2;
+    int startY = 50;
+    int xOffset = 100;
     int yOffset = 50;
+
     ParseTreeNode* root = parse(listoftoks);
+
     if (root) {
-        drawParseTree(hdc, root, x, y, xOffset, yOffset);
+        // Function to recursively draw the parse tree
+        std::function<void(ParseTreeNode*, int, int, int)> drawNode =
+            [&](ParseTreeNode* node, int x, int y, int x_offset) {
+            // Draw the current node
+            RECT nodeRect = {x - 50, y - 15, x + 50, y + 15};
+            FrameRect(hdc, &nodeRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+            DrawTextA(hdc, node->name.c_str(), -1, &nodeRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+            int childCount = node->children.size();
+            if (childCount > 0) {
+                int childrenStartX = x - (childCount - 1) * x_offset / 2;
+                for (int i = 0; i < childCount; ++i) {
+                    ParseTreeNode* child = node->children[i];
+                    int childX = childrenStartX + i * x_offset;
+                    int childY = y + yOffset;
+
+                    // Draw connection line
+                    MoveToEx(hdc, x, y + 15, NULL);
+                    LineTo(hdc, childX, childY - 15);
+
+                    drawNode(child, childX, childY, x_offset / (childCount > 1 ? childCount : 1));
+                }
+            }
+        };
+
+        drawNode(root, centerX, startY, xOffset);
         delete root; // Clean up the parse tree after drawing
     } else {
-        TextOutA(hdc, 10, 10, "Parsing failed", 15);
+        TextOutA(hdc, 10, 10, "Parsing failed", 14);
     }
-    // Clean up the parse tree after drawing
-    // You can use the same logic as in the previous example to draw the parsing tree
-    // For simplicity, let's just draw a placeholder for the parsing tree
-    // Draw a placeholder for the parsing tree
-    TextOutA(hdc, x, y, "Parsing Tree", 12);
-    // Draw the root node
-    Rectangle(hdc, x - 20, y - 20, x + 20, y + 20);
-    TextOutA(hdc, x - 15, y - 15, "Root", 4);
-    // Draw child nodes
-    int childX = x - 50;
-    int childY = y + 50;
-    for (int i = 0; i < 2; ++i) { // Example: 2 child nodes
-        Rectangle(hdc, childX - 20, childY - 20, childX + 20, childY + 20);
-        TextOutA(hdc, childX - 15, childY - 15, "Child", 5);
-        childX += 50; // Adjust spacing between child nodes
-    }
-    // Draw lines connecting parent and child nodes
-    MoveToEx(hdc, x, y, NULL);
-    LineTo(hdc, childX - 50, childY); // Connect to the first child
-    MoveToEx(hdc, x, y, NULL);
-    LineTo(hdc, childX, childY); // Connect to the second child
-    // Clean up the parse tree after drawing
-    // You can use the same logic as in the previous example to draw the parsing tree
-    // For simplicity, let's just draw a placeholder for the parsing tree
-    // Draw a placeholder for t
+}
+void displayErrorMessage(const std::string& message) {
+    MessageBoxA(globalMainWindow, message.c_str(), "Error", MB_OK | MB_ICONERROR);
+}
+void drawNode(HDC hdc, int x, int y, const std::string& text) {
+    RECT rect = {x - 50, y - 15, x + 50, y + 15};
+    FrameRect(hdc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    DrawTextA(hdc, text.c_str(), -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
